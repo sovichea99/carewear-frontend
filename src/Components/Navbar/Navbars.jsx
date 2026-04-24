@@ -1,0 +1,201 @@
+import { useContext, useState, useRef, useEffect } from "react";
+import { IoIosHome, IoIosArrowDown } from "react-icons/io";
+import { MdMenu, MdOutlineShoppingCart } from "react-icons/md";
+import { FiUser, FiLogOut, FiUserPlus, FiShoppingBag } from "react-icons/fi";
+import ResponsiveMenu from "./ResponsiveMenu";
+import { useNavigate, useLocation } from "react-router-dom";
+import { CartContext } from "../../Contexts/CartContext";
+import { motion } from "framer-motion";
+import { getCurrentUser } from "../../Service/Auth"; // Adjust the import path as necessary
+
+const NavbarMenu = [
+  { id: 1, title: "Home", link: "/" },
+  { id: 2, title: "Product", link: "/products" },
+  { id: 3, title: "About", link: "/about" },
+  { id: 4, title: "Contacts", link: "#" },
+];
+
+const Navbars = () => {
+  const [open, setOpen] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { itemCount, clearCart } = useContext(CartContext);
+  const profileRef = useRef(null);
+
+  const handleLogout = () => {
+    clearCart(); // Clear cart items
+    sessionStorage.removeItem("authToken"); // Remove auth token
+    sessionStorage.removeItem("user"); // Remove user data
+    navigate("/login"); // Redirect to login page
+  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await getCurrentUser();
+      setUser(userData);
+    };
+    fetchUser();
+  }, []);
+
+  const profileMenu = [
+    { title: "Orders", link: "/orders", icon: <FiShoppingBag /> },
+    user && user.email
+      ? { title: "Logout", action: "logout", icon: <FiLogOut /> }
+      : { title: "Register/Login", link: "/register", icon: <FiUserPlus /> },
+  ];
+
+  return (
+    <>
+      <nav className="fixed top-0 left-0 w-full py-2 backdrop-blur-lg bg-white/30 z-50 shadow-xs ">
+        <div className="container flex justify-between items-center py-4 md:pt-4">
+          <div className="text-xl flex items-center space-x-1 font-bold">
+            <p className="text-purple-900">Care</p>
+            <p className="text-pink-600">Wear</p>
+            <IoIosHome className="text-pink-600" />
+          </div>
+
+          <div className="hidden md:block">
+            <ul className="flex items-center gap-6 text-gray-600">
+              {NavbarMenu.map((menu) => (
+                <li key={menu.id} className="text-xl">
+                  <a
+                    href={menu.link}
+                    className={`inline-block py-1 px-3 font-semibold 
+                                            ${
+                                              location.pathname === menu.link
+                                                ? "text-pink-500"
+                                                : "hover:text-pink-600 hover:shadow-[0_3px_0_-1px_#ec4899]"
+                                            }
+                                            `}
+                  >
+                    {menu.title}
+                  </a>
+                </li>
+              ))}
+
+              {/* Cart Button */}
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                onClick={() => navigate("/cart")}
+                className="relative text-2xl hover:bg-pink-700 hover:text-white rounded-full duration-200 p-1"
+              >
+                <MdOutlineShoppingCart />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full">
+                    {itemCount}
+                  </span>
+                )}
+              </motion.button>
+
+              {/* Profile Dropdown */}
+              <li className="relative" ref={profileRef}>
+                <div
+                  className="flex items-center gap-2 cursor-pointer hover:text-pink-600 ml-4"
+                  onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                >
+                  <div className="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center relative">
+                    {/* Replace with user image if available */}
+                    <FiUser className="text-xl text-pink-700" />
+                    {/* Alternatively show user initials */}
+                    {/* <span className="font-semibold text-green-700">JD</span> */}
+                  </div>
+                  <IoIosArrowDown
+                    className={`transition-transform duration-200 ${
+                      showProfileDropdown ? "rotate-180" : ""
+                    }`}
+                  />
+                </div>
+
+                {/* Dropdown Menu */}
+                {showProfileDropdown && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-50 border border-gray-100"
+                  >
+                    <div className="px-4 py-3 border-b border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="">
+                          <div className="h-10 w-10 rounded-full bg-pink-100 flex items-center justify-center relative">
+                            {/* Replace with user image if available */}
+                            <FiUser className="text-xl text-pink-700" />
+                            {/* Alternatively show user initials */}
+                            {/* <span className="font-semibold text-green-700">JD</span> */}
+                          </div>
+                        </div>
+                        <div className="flex flex-col">
+                          <p className="text-sm font-medium text-gray-800">
+                            {}
+                            {user ? user.name : "Guest"}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {user?.email || "Guest account"}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {profileMenu.map((item, index) => (
+                      <a
+                        key={index}
+                        href={item.link}
+                        className={`block px-4 py-2.5 text-sm text-gray-700 cursor-pointer transition-colors 
+                        ${
+                          // This is the ternary operator for the hover color
+                          item.action === "logout"
+                            ? "hover:bg-red-50 hover:text-red-600"
+                            : "hover:bg-pink-50"
+                        }`}
+                        onClick={() => {
+                          // First, check for the special 'logout' action
+                          if (item.action === "logout") {
+                            handleLogout();
+                          }
+                          // If it's not a logout action, check if it has a link
+                          else if (item.link) {
+                            navigate(item.link);
+                          }
+                          // Finally, always close the dropdown after an action
+                          setShowProfileDropdown(false);
+                        }}
+                      >
+                        <div className="flex items-center gap-2">
+                          {/* {item.icon} 
+                          {item.title} */}
+                          <span className="text-base flex items-center">
+                            {item.icon}
+                          </span>
+                          <span>{item.title}</span>
+                        </div>
+                      </a>
+                    ))}
+                  </motion.div>
+                )}
+              </li>
+            </ul>
+          </div>
+
+          <div className="md:hidden" onClick={() => setOpen(!open)}>
+            <MdMenu className="text-4xl" />
+          </div>
+        </div>
+      </nav>
+
+      <ResponsiveMenu open={open} setOpen={setOpen} />
+    </>
+  );
+};
+
+export default Navbars;
