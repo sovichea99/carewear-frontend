@@ -2,7 +2,7 @@ import Footer from '../Home/Footer'
 import { motion } from 'framer-motion'
 import Aboutusimg from '../../assets/2751001.jpg'
 import { FadeLeft, FadeRight } from '../../ultility/animation'
-import mission from '../../assets/mission.png'
+import mission from "../../assets/Mission.png";
 
 const AboutUs = () => {
   return (
