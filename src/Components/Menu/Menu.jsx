@@ -32,7 +32,7 @@ const Menu = () => {
   if (error) return <p className='flex justify-center items-center text-center'>{error}</p>;
 
   // Slice the first 4 products for the menu
-  const displayedProducts = products.slice(0, 4);
+  const displayedProducts = Array.isArray(products) ? products.slice(0, 8) : [];
 
   return (
     <section>
