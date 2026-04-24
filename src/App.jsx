@@ -8,7 +8,7 @@ import ProductDetail from "./Components/Product/ProductDetail"; // Product Detai
 import AddToCart from "./Components/Navbar/AddToCart"; // Cart Page
 import PaymentPage from "./Components/Navbar/PaymentPage"; // Payment Page
 import AboutUs from "./Components/Navbar/AboutUs"; // About Us Page
-import Login from "./Components/Auth/login"; // Login Page
+import Login from "./Components/Auth/Login";
 import Register from "./Components/Auth/Register";
 import OrderConfirmationPage from "./Components/Navbar/OrderConfirmationPage";
 
